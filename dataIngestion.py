@@ -7,14 +7,19 @@ from rasterio import features
 from rasterio.enums import MergeAlg
 from rasterio.plot import show
 
+# BIG NOTE - CAUTION
+# I am not sure how to finish this off, so I'll leave this as a template for if someone wants to finish it off,
+# but it is currently incomplete - it produces the binary mask, but this has to applied to a large geo-referenced
+# coverage image to produce the dataset.
+
 
 geo_database = "TRAFFIC_PavementMarkings.gdb"
 
 
-def ingest_ground_truth_data(save=False, save_as="ground_truth_raster.tif", show_data=False, resolution=1):
-    # Resolution is in terms of meters...
-    # Trying to visually inspect the raster file using this resolution will look like its all zeros - the data is very sparse
-    gdf = gpd.read_file(geo_database, layer='TRAFFIC_PavementMarkings')
+def ingest_ground_truth_data(layer, save=False, save_as="ground_truth_raster.tif", show_data=False, resolution=1):
+    # Resolution is in terms of meters... Trying to visually inspect the raster file using this resolution will look
+    # like its all zeros - the data is very sparse
+    gdf = gpd.read_file(geo_database, layer=layer)
 
     unique_types = gdf["TYPE"].unique()
     type_mapping = {type_value: idx for idx, type_value in enumerate(unique_types)}
@@ -25,11 +30,12 @@ def ingest_ground_truth_data(save=False, save_as="ground_truth_raster.tif", show
 
     minx, miny, maxx, maxy = gdf.total_bounds  # Use the bounds of the geometries
     width, height = int((maxx - minx)), int((maxy - miny))
-    raster_dims = (width//resolution, height//resolution)
+    raster_dims = (width // resolution, height // resolution)
 
     transform = rasterio.transform.from_bounds(minx, miny, maxx, maxy, width, height)
     output_raster = features.rasterize(
-        [(geo, data) for geo, data in zip(geometry, gdf['TYPE_NUMERIC'])],  # This is specific to the columns provided in the cambridge Dataset
+        [(geo, data) for geo, data in zip(geometry, gdf['TYPE_NUMERIC'])],
+        # This is specific to the columns provided in the cambridge Dataset
         out_shape=raster_dims,
         transform=rasterio.transform.from_bounds(minx, miny, maxx, maxy, width, height),
         fill=0, dtype='int32', all_touched=True,  # If it begins to predict excessively large bounding boxes,
@@ -53,4 +59,14 @@ def ingest_ground_truth_data(save=False, save_as="ground_truth_raster.tif", show
     return output_raster
 
 
-raster_data = ingest_ground_truth_data()
+def raster_to_binary_mask(raster_data, feature_type):
+    binary_mask = np.where(raster_data == feature_type, 1, 0)
+    # Takes all features with a particular numerical type value, and converts them to a binary map
+
+    return binary_mask
+
+
+raster_data = ingest_ground_truth_data('TRAFFIC_PavementMarkings')
+
+# binary_image_mask = raster_to_binary_mask(raster_data, 3)
+# print(binary_image_mask)
