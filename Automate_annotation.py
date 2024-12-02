@@ -4,7 +4,8 @@ from geopy.geocoders import Nominatim
 import requests
 
 MAPBOX_API_KEY = ("pk.eyJ1Ijoia29uc3RhbnRpbm9zLWRlbWlyaXMiLCJhIjoiY20zdmVuOGtiMDlzdjJsc2dsaHg3d2w3dSJ9.Kc4Z9eZ7_"
-                  "nycHeacJueb0A")  # This is kostas's personal API key, might have to replace with a business one...
+                  "nycHeacJueb0A")
+# This is (my) kostas's personal API key, might have to replace with a business one... I don't want to get charged
 crosswalk_images_folder = "crosswalk_images"
 
 

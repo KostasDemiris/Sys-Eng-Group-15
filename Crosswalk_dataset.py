@@ -7,7 +7,7 @@ from PIL import Image
 # annotations = pd.read_csv("Crosswalk.v7-crosswalk-t3.tensorflow/train/_annotations.csv") - moved to inside init
 
 
-class CrossWalkDataset:
+class CrosswalkDataset:
     def __init__(self, annotation_path, image_path, transform=None):
         self.annotations = pd.read_csv(annotation_path)
         self.image_dir = image_path
@@ -15,8 +15,8 @@ class CrossWalkDataset:
 
         self.unique_labels = self.annotations["class"].unique()
         # There might be a more efficient method to do this -- come back to
-        self.type_mapping = {type_value: idx for idx, type_value in enumerate(self.unique_labels)}
-        # Labels have been converted to numerical class labels mapped by type mapping - for tensor conversion
+        self.type_mapping = {type_value: 1 + idx for idx, type_value in enumerate(self.unique_labels)}
+        # Labels have been converted to numerical class labels mapped by type mapping - for tensor conversion, 0 is none
 
         self.image_data = []
         self.bounding_boxes = []  # Not every image has a bbox, and some have multiple
@@ -56,16 +56,16 @@ class CrossWalkDataset:
                 if row['class'] == "ZebraStyle":
                     numerical_class = self.type_mapping[row['class']]
                     entity_annotations.append([numerical_class, (row['xmin'], row['ymin'], row['xmax'], row['ymax'])])
+                    # print([numerical_class, (row['xmin'], row['ymin'], row['xmax'], row['ymax'])])
 
             self.image_data.append(image_array)
             self.labels.append([entity_box for _, entity_box in entity_annotations])
             self.bounding_boxes.append([label for label, _ in entity_annotations])
 
 
-dataset = CrossWalkDataset("Crosswalk.v7-crosswalk-t3.tensorflow/train/_annotations.csv",
+crosswalk_dataset = CrosswalkDataset("Crosswalk.v7-crosswalk-t3.tensorflow/train/_annotations.csv",
                            "Crosswalk.v7-crosswalk-t3.tensorflow/train")
-
-img, bounding_boxes, class_label = dataset[120]
+img, class_label, bounding_boxes = crosswalk_dataset[20]
 
 print(bounding_boxes)
 print(class_label)
