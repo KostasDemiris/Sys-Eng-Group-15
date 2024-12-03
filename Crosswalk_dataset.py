@@ -40,7 +40,7 @@ class CrosswalkDataset:
         if self.transform:
             tensor_image = self.transform(tensor_image)
 
-        return tensor_image, tensor_bbox, tensor_label
+        return tensor_image, (tensor_bbox, tensor_label)
 
     def process_annotations(self):
         for filename, group in self.annotations.groupby('filename'):
@@ -65,7 +65,7 @@ class CrosswalkDataset:
 
 crosswalk_dataset = CrosswalkDataset("Crosswalk.v7-crosswalk-t3.tensorflow/train/_annotations.csv",
                            "Crosswalk.v7-crosswalk-t3.tensorflow/train")
-img, class_label, bounding_boxes = crosswalk_dataset[20]
+img, (class_label, bounding_boxes) = crosswalk_dataset[20]
 
 print(bounding_boxes)
 print(class_label)

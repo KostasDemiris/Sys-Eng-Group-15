@@ -1,3 +1,4 @@
+import numpy as np
 import torch
 import torch.nn as nn
 import torchvision
@@ -24,7 +25,8 @@ def post_processing(bbox_pred, label_pred, confidence_threshold=0.8, iou_thresho
     # Confidence threshold is the minimum confidence of the model that there a crosswalk at a point
     # iou_threshold is the minimum number of (intersection/union) for two predictions to be considered the same pred.
 
-    scores = label_pred[:, 1]  # Reminder that 1 is Crosswalk Label's confidence
+    scores = label_pred[:, :, 1]  # Reminder that 1 is Crosswalk Label's confidence
+    print(np.shape(scores), "scores")
 
     confident_predictions = scores >= confidence_threshold  # Removes background predictions
     kept_bbox = bbox_pred[confident_predictions]
@@ -40,20 +42,47 @@ def post_processing(bbox_pred, label_pred, confidence_threshold=0.8, iou_thresho
     return final_bboxes, final_labels
 
 
+def collate_function(batch):
+    images = []
+    output_data = []
+
+    for item in batch:
+        images.append(item[0])  # img
+        output_data.append(item[1])  # training data (labels, boxes)
+
+    batched_images = torch.stack(images)
+    return batched_images, output_data
+
+
 def basic_train_model(model_to_train, dataset, epoch_number=25, loss_func=BasicDetectionLoss):
     optimiser = torch.optim.Adam(model_to_train.parameters())
-    criteria = loss_func
+    criteria = loss_func()
 
     # We need a batch function because there can be a variable number of bounding boxes in the training data
-    dataloader = torch.utils.data.DataLoader(dataset, batch_size=32, shuffle=True, collate_fn=
-        lambda batch: tuple(zip(*batch)))
+    dataloader = torch.utils.data.DataLoader(dataset, batch_size=16, shuffle=True, collate_fn=collate_function)
 
     # Main training loop
     for epoch in range(epoch_number):
         model_to_train.train()
+        running_loss = 0.0
 
-        for image, training_data in dataloader:
-            pass
+        for images, ground_truth in dataloader:
+            optimiser.zero_grad()
+            gt_class_labels, gt_bounding_boxes = ground_truth[0]
+
+            pred_bbox, pred_labels = model(images)
+            print(np.shape(pred_bbox), np.shape(pred_labels))
+            nms_bbox, nms_labels = post_processing(pred_bbox, pred_labels)
+            print("DONE W MODEL")
+            print((np.shape(nms_bbox)), np.shape(nms_labels), "post-nms")
+            print(np.shape(gt_bounding_boxes), np.shape(gt_class_labels))
+            computed_loss = criteria(gt_bounding_boxes, gt_class_labels, nms_bbox, nms_labels)
+            computed_loss.backwards()
+
+            optimiser.step()
+            running_loss += computed_loss
+
+        print(f"Epoch [{epoch + 1}/{epoch_number}], Loss: {running_loss / len(dataloader)}")
 
     # Don't really have to return it, but why not
     return model_to_train
@@ -62,3 +91,5 @@ def basic_train_model(model_to_train, dataset, epoch_number=25, loss_func=BasicD
 model = Model.BasicCrosswalkDetector()
 crosswalk_dataset = CrosswalkDataset("Crosswalk.v7-crosswalk-t3.tensorflow/train/_annotations.csv",
                                      "Crosswalk.v7-crosswalk-t3.tensorflow/train")
+
+model = basic_train_model(model, crosswalk_dataset)
