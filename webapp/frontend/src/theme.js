@@ -1,6 +1,6 @@
 import { createTheme } from '@mui/material/styles';
 
-const theme = createTheme({
+const themeOptions = {
   palette: {
     primary: {
       main: '#2D3436',
@@ -52,7 +52,7 @@ const theme = createTheme({
         root: {
           paddingLeft: 24,
           paddingRight: 24,
-          [theme.breakpoints.up('sm')]: {
+          '@media (min-width: 600px)': {
             paddingLeft: 32,
             paddingRight: 32,
           },
@@ -100,6 +100,8 @@ const theme = createTheme({
       },
     },
   },
-});
+};
+
+const theme = createTheme(themeOptions);
 
 export default theme; 
