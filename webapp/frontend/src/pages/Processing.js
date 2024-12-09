@@ -264,6 +264,36 @@ const ObjectIcon = styled(Box)(({ theme, selected }) => ({
   }
 }));
 
+const FileCard = styled(Paper)(({ theme }) => ({
+  padding: theme.spacing(2),
+  marginBottom: theme.spacing(1.5),
+  display: 'flex',
+  alignItems: 'center',
+  justifyContent: 'space-between',
+  borderRadius: '20px',
+  border: '1px solid rgba(0, 0, 0, 0.08)',
+  backgroundColor: 'rgba(255, 255, 255, 0.8)',
+  transition: 'all 0.3s ease',
+  transform: 'translateX(0)',
+  '&:hover': {
+    backgroundColor: 'rgba(255, 255, 255, 0.95)',
+    transform: 'translateX(8px)',
+    boxShadow: '0 4px 12px rgba(0, 0, 0, 0.05)',
+  }
+}));
+
+const ResultButton = styled(Button)(({ theme }) => ({
+  padding: '12px 32px',
+  borderRadius: '30px',
+  transition: 'all 0.3s ease',
+  fontSize: '1rem',
+  fontWeight: 600,
+  '&:hover': {
+    transform: 'translateY(-2px)',
+    boxShadow: '0 8px 24px rgba(0, 0, 0, 0.1)',
+  }
+}));
+
 function Processing() {
   const theme = useTheme();
   const [activeStep, setActiveStep] = useState(0);
@@ -497,10 +527,20 @@ function Processing() {
             sx={{
               cursor: 'pointer',
               textAlign: 'center',
-              py: 8,
+              py: uploadedFiles.length > 0 ? 4 : 8,
               px: 4,
-              background: isDragActive ? 'rgba(9, 132, 227, 0.04)' : 'rgba(255, 255, 255, 0.9)',
-              border: `2px dashed ${isDragActive ? '#0984E3' : 'rgba(9, 132, 227, 0.2)'}`,
+              background: isDragActive 
+                ? 'rgba(9, 132, 227, 0.04)' 
+                : uploadedFiles.length > 0
+                ? 'rgba(255, 255, 255, 0.7)'
+                : 'rgba(255, 255, 255, 0.9)',
+              border: `2px dashed ${
+                isDragActive 
+                  ? '#0984E3' 
+                  : uploadedFiles.length > 0
+                  ? 'rgba(9, 132, 227, 0.1)'
+                  : 'rgba(9, 132, 227, 0.2)'
+              }`,
               transition: 'all 0.3s ease',
               '&:hover': {
                 border: '2px dashed #0984E3',
@@ -510,89 +550,196 @@ function Processing() {
             }}
           >
             <input {...getInputProps()} />
-            <Box
-              sx={{
-                width: 80,
-                height: 80,
-                borderRadius: '20px',
-                background: 'linear-gradient(135deg, rgba(9, 132, 227, 0.1) 0%, rgba(116, 185, 255, 0.1) 100%)',
-                display: 'flex',
-                alignItems: 'center',
-                justifyContent: 'center',
-                margin: '0 auto',
-                mb: 3,
-              }}
-            >
-              <UploadIcon sx={{ 
-                fontSize: 40, 
-                color: isDragActive ? '#0984E3' : 'rgba(9, 132, 227, 0.6)',
-                transition: 'all 0.3s ease',
-              }} />
-            </Box>
-            <Typography variant="h6" gutterBottom sx={{ fontWeight: 600 }}>
-              {isDragActive ? 'Drop files here' : 'Upload Files'}
-            </Typography>
-            <Typography color="text.secondary" sx={{ mb: 2 }}>
-              {isDragActive ? 'Release to upload files' : 'Drag and drop files here or click to browse'}
-            </Typography>
-            <Typography variant="caption" color="text.secondary" sx={{ display: 'block' }}>
-              Supported formats: .jpg, .png, .tiff
-            </Typography>
+            {uploadedFiles.length > 0 ? (
+              <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 2 }}>
+                <Box
+                  sx={{
+                    width: 48,
+                    height: 48,
+                    borderRadius: '12px',
+                    background: 'linear-gradient(135deg, rgba(9, 132, 227, 0.1) 0%, rgba(116, 185, 255, 0.1) 100%)',
+                    display: 'flex',
+                    alignItems: 'center',
+                    justifyContent: 'center',
+                  }}
+                >
+                  <UploadIcon sx={{ 
+                    fontSize: 24, 
+                    color: 'rgba(9, 132, 227, 0.6)',
+                  }} />
+                </Box>
+                <Box sx={{ textAlign: 'left' }}>
+                  <Typography variant="subtitle2" sx={{ fontWeight: 600 }}>
+                    Add more files
+                  </Typography>
+                  <Typography variant="caption" color="text.secondary">
+                    or drop them here
+                  </Typography>
+                </Box>
+              </Box>
+            ) : (
+              <>
+                <Box
+                  sx={{
+                    width: 80,
+                    height: 80,
+                    borderRadius: '20px',
+                    background: 'linear-gradient(135deg, rgba(9, 132, 227, 0.1) 0%, rgba(116, 185, 255, 0.1) 100%)',
+                    display: 'flex',
+                    alignItems: 'center',
+                    justifyContent: 'center',
+                    margin: '0 auto',
+                    mb: 3,
+                  }}
+                >
+                  <UploadIcon sx={{ 
+                    fontSize: 40, 
+                    color: isDragActive ? '#0984E3' : 'rgba(9, 132, 227, 0.6)',
+                    transition: 'all 0.3s ease',
+                  }} />
+                </Box>
+                <Typography variant="h6" gutterBottom sx={{ fontWeight: 600 }}>
+                  {isDragActive ? 'Drop files here' : 'Upload Files'}
+                </Typography>
+                <Typography color="text.secondary" sx={{ mb: 2 }}>
+                  {isDragActive ? 'Release to upload files' : 'Drag and drop files here or click to browse'}
+                </Typography>
+                <Typography variant="caption" color="text.secondary" sx={{ display: 'block' }}>
+                  Supported formats: .jpg, .png, .tiff
+                </Typography>
+              </>
+            )}
           </StyledPaper>
 
           {uploadedFiles.length > 0 && (
             <Box sx={{ mt: 4 }}>
-              <Typography variant="subtitle1" sx={{ mb: 2, fontWeight: 600 }}>
-                Uploaded Files ({uploadedFiles.length})
-              </Typography>
+              <Box sx={{ 
+                display: 'flex', 
+                alignItems: 'center', 
+                justifyContent: 'space-between',
+                mb: 2 
+              }}>
+                <Typography variant="subtitle1" sx={{ fontWeight: 600 }}>
+                  Uploaded Files
+                </Typography>
+                <Typography 
+                  variant="body2" 
+                  color="text.secondary"
+                  sx={{ 
+                    backgroundColor: 'rgba(9, 132, 227, 0.08)',
+                    px: 1.5,
+                    py: 0.5,
+                    borderRadius: '20px',
+                    fontWeight: 500
+                  }}
+                >
+                  {uploadedFiles.length} {uploadedFiles.length === 1 ? 'file' : 'files'}
+                </Typography>
+              </Box>
               {uploadedFiles.map((file, index) => (
-                <Fade in key={index}>
-                  <Paper sx={{ 
-                    p: 2, 
-                    mb: 1.5, 
-                    display: 'flex', 
-                    alignItems: 'center',
-                    justifyContent: 'space-between',
-                    borderRadius: '12px',
-                    border: '1px solid rgba(0, 0, 0, 0.08)',
-                    transition: 'all 0.2s ease',
-                    '&:hover': {
-                      backgroundColor: 'rgba(9, 132, 227, 0.02)',
-                      transform: 'translateX(4px)',
-                    }
-                  }}>
+                <motion.div
+                  key={index}
+                  initial={{ opacity: 0, x: -20 }}
+                  animate={{ opacity: 1, x: 0 }}
+                  transition={{ 
+                    duration: 0.3,
+                    delay: index * 0.1,
+                    ease: "easeOut"
+                  }}
+                >
+                  <FileCard>
                     <Box sx={{ display: 'flex', alignItems: 'center', flex: 1 }}>
-                      <ArticleIcon sx={{ 
-                        mr: 2, 
-                        color: 'primary.main',
-                        fontSize: 24,
-                      }} />
-                      <Box>
-                        <Typography variant="subtitle2" sx={{ fontWeight: 600 }}>
+                      <Box
+                        sx={{
+                          width: 40,
+                          height: 40,
+                          borderRadius: '14px',
+                          backgroundColor: 'rgba(9, 132, 227, 0.08)',
+                          display: 'flex',
+                          alignItems: 'center',
+                          justifyContent: 'center',
+                          mr: 2,
+                          transition: 'all 0.3s ease',
+                        }}
+                      >
+                        <ArticleIcon 
+                          sx={{ 
+                            color: '#0984E3',
+                            fontSize: 20,
+                          }} 
+                        />
+                      </Box>
+                      <Box sx={{ flex: 1, minWidth: 0 }}>
+                        <Typography 
+                          variant="subtitle2" 
+                          sx={{ 
+                            fontWeight: 600,
+                            color: 'text.primary',
+                            mb: 0.5,
+                            textAlign: 'left',
+                            overflow: 'hidden',
+                            textOverflow: 'ellipsis',
+                            whiteSpace: 'nowrap'
+                          }}
+                        >
                           {file.name}
                         </Typography>
-                        <Typography variant="caption" color="text.secondary">
-                          {(file.size / 1024 / 1024).toFixed(2)} MB
-                        </Typography>
+                        <Box sx={{ display: 'flex', alignItems: 'center', gap: 2 }}>
+                          <Typography 
+                            variant="caption" 
+                            sx={{ 
+                              color: 'text.secondary',
+                              backgroundColor: 'rgba(0, 0, 0, 0.04)',
+                              px: 1.5,
+                              py: 0.5,
+                              borderRadius: '20px',
+                              fontWeight: 500,
+                              textTransform: 'uppercase',
+                              letterSpacing: '0.02em'
+                            }}
+                          >
+                            {file.name.split('.').pop().toUpperCase()}
+                          </Typography>
+                          <Typography 
+                            variant="caption" 
+                            color="text.secondary"
+                            sx={{ flexShrink: 0 }}
+                          >
+                            {(file.size / 1024 / 1024).toFixed(2)} MB
+                          </Typography>
+                        </Box>
                       </Box>
                     </Box>
-                    <IconButton 
-                      onClick={(e) => {
-                        e.stopPropagation();
-                        setUploadedFiles(files => files.filter((_, i) => i !== index));
-                      }}
-                      sx={{
-                        color: 'text.secondary',
-                        '&:hover': {
-                          color: 'error.main',
-                          backgroundColor: 'error.light',
-                        }
-                      }}
+                    <motion.div
+                      whileHover={{ scale: 1.1 }}
+                      whileTap={{ scale: 0.9 }}
                     >
-                      <CloseIcon />
-                    </IconButton>
-                  </Paper>
-                </Fade>
+                      <IconButton 
+                        onClick={(e) => {
+                          e.stopPropagation();
+                          const element = e.currentTarget.parentElement.parentElement.parentElement;
+                          element.style.transform = 'translateX(-100%)';
+                          element.style.opacity = '0';
+                          setTimeout(() => {
+                            setUploadedFiles(files => files.filter((_, i) => i !== index));
+                          }, 300);
+                        }}
+                        sx={{
+                          width: 32,
+                          height: 32,
+                          color: 'text.secondary',
+                          transition: 'all 0.2s ease',
+                          '&:hover': {
+                            backgroundColor: 'error.light',
+                            color: 'error.main',
+                          }
+                        }}
+                      >
+                        <CloseIcon sx={{ fontSize: 18 }} />
+                      </IconButton>
+                    </motion.div>
+                  </FileCard>
+                </motion.div>
               ))}
             </Box>
           )}
@@ -755,42 +902,96 @@ function Processing() {
               </Box>
             </StyledPaper>
           ) : (
-            <StyledPaper sx={{ p: 6, textAlign: 'center' }}>
+            <StyledPaper 
+              sx={{ 
+                p: 8,
+                textAlign: 'center',
+                background: 'linear-gradient(135deg, rgba(255, 255, 255, 0.95) 0%, rgba(255, 255, 255, 0.85) 100%)',
+              }}
+            >
               <motion.div
                 initial={{ scale: 0.9, opacity: 0 }}
                 animate={{ scale: 1, opacity: 1 }}
-                transition={{ duration: 0.3 }}
+                transition={{ duration: 0.5 }}
               >
-                <CheckCircleIcon 
+                <Box
+                  sx={{
+                    width: 100,
+                    height: 100,
+                    borderRadius: '30px',
+                    background: 'linear-gradient(135deg, #4CAF50 0%, #81C784 100%)',
+                    display: 'flex',
+                    alignItems: 'center',
+                    justifyContent: 'center',
+                    margin: '0 auto',
+                    mb: 4,
+                    boxShadow: '0 12px 32px rgba(76, 175, 80, 0.2)',
+                  }}
+                >
+                  <CheckCircleIcon 
+                    sx={{ 
+                      fontSize: 50,
+                      color: 'white',
+                    }} 
+                  />
+                </Box>
+                <Typography 
+                  variant="h3" 
+                  gutterBottom 
                   sx={{ 
-                    fontSize: 72, 
-                    color: 'success.main',
-                    mb: 2 
-                  }} 
-                />
-                <Typography variant="h4" gutterBottom sx={{ fontWeight: 600 }}>
-                  Processing Complete!
+                    fontWeight: 700,
+                    background: 'linear-gradient(45deg, #2D3436 30%, #636E72 90%)',
+                    WebkitBackgroundClip: 'text',
+                    WebkitTextFillColor: 'transparent',
+                    mb: 2,
+                  }}
+                >
+                  Success!
                 </Typography>
-                <Typography color="text.secondary" sx={{ mb: 4 }}>
-                  Your files have been successfully processed
+                <Typography 
+                  variant="h6" 
+                  sx={{ 
+                    color: 'text.secondary',
+                    mb: 6,
+                    maxWidth: '500px',
+                    mx: 'auto',
+                    lineHeight: 1.6,
+                  }}
+                >
+                  Your files have been successfully processed and are ready for download
                 </Typography>
-                <Box sx={{ display: 'flex', justifyContent: 'center', gap: 2 }}>
-                  <Button 
-                    variant="contained"
+                <Box 
+                  sx={{ 
+                    display: 'flex', 
+                    justifyContent: 'center', 
+                    gap: 2,
+                  }}
+                >
+                  <Button
+                    variant="outlined"
                     onClick={() => {
                       setProcessSuccess(false);
                       setUploadedFiles([]);
                       setActiveStep(0);
                     }}
+                    sx={{
+                      flex: 1,
+                      py: 1.5,
+                      borderRadius: '10px',
+                      maxWidth: 280,
+                    }}
                   >
                     Process New Files
                   </Button>
-                  <Button 
-                    variant="outlined"
-                    color="secondary"
+                  <ContinueButton
+                    variant="contained"
+                    sx={{ 
+                      flex: '0 1 280px',
+                    }}
                   >
                     Download Results
-                  </Button>
+                    <NextIcon className="arrow-icon" />
+                  </ContinueButton>
                 </Box>
               </motion.div>
             </StyledPaper>
