@@ -82,7 +82,7 @@ function Navbar() {
             transition={{ duration: 0.5 }}
           >
             <LogoContainer onClick={() => navigate('/')} sx={{ mr: 4 }}>
-              <LogoIcon>S</LogoIcon>
+              <img src="/favicon.ico" alt="SightLink Logo" style={{ width: 32, height: 32 }} />
               <Typography 
                 variant="h6" 
                 component="div" 
